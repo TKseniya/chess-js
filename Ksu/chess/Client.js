@@ -7,11 +7,11 @@ window.onload = function()
 	//Фидан
 	//socket = io.connect("http://192.168.1.158:3056");
 	//Федя
-	//socket = io.connect("http://192.168.1.63:3056");
+	socket = io.connect("http://192.168.1.63:3056");
 	
 	//socket = io.connect("http://10.254.18.103:3056");
 	
-	socket = io.connect("http://172.31.100.184:3056");
+	//socket = io.connect("http://172.31.100.184:3056");
 	
 	socket.on("connect", function () 
 	{
@@ -129,7 +129,9 @@ window.onload = function()
 				obj.winnerColor = "no";
 			alert("Winner: " + obj.winnerColor);
 			//выход
-		});		
+		});	
+		
+		
 	});	
 };
 
