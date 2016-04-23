@@ -41,7 +41,7 @@ function CanMoveTo(id, color)
 		toKill = true;
 		return true;
 	}
-	if (clientservermod)
+	if (clientservermod || observermod)
 	{
 		if ($(":first-child", $("#"+id)).length)
 			toKill = true;
@@ -164,6 +164,7 @@ function moveTo(id)
 	}
 	
 	//просто перемещаем
+		
 	$("#"+id).append(figure);
 	didRookOrKingMoved();	
 	moveType = "move";
@@ -172,19 +173,21 @@ function moveTo(id)
 function didRookOrKingMoved()
 {
 	
-	if (figure.attr("name") == "rook" || "king")
+	if (figure.attr("name") == "rook" || figure.attr("name") == "king")
 	{
 		if (figureId%10 == 1)
 		{
 			hasMoved[color][figure.attr("name") + "_1"] = true
 		}
 		else
-		if (figureId%10 == 8)
 		{
-			hasMoved[color][figure.attr("name") + "_8"] = true
+			if (figureId%10 == 8)
+			{
+				hasMoved[color][figure.attr("name") + "_8"] = true
+			}
+			else
+				hasMoved[color][figure.attr("name")] = true;
 		}
-		else
-		hasMoved[color][figure.attr("name")] = true;
 	}
 }
 

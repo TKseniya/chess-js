@@ -3,11 +3,11 @@ clientservermod = true;
 window.onload = function()
 {
 	//я
-	//socket = io.connect("http://192.168.1.231:3056");
+	socket = io.connect("http://127.0.0.1:3056");
 	//Фидан
 	//socket = io.connect("http://192.168.1.158:3056");
 	//Федя
-	socket = io.connect("http://192.168.1.63:3056");
+	//socket = io.connect("http://192.168.1.63:3056");
 	
 	//socket = io.connect("http://10.254.18.103:3056");
 	
@@ -15,7 +15,9 @@ window.onload = function()
 	
 	socket.on("connect", function () 
 	{
-		socket.emit("game_find");
+		//socket.emit("game_find");
+		menu();
+		
 		socket.on("game_found", function(obj)
 		{
 			
@@ -28,74 +30,115 @@ window.onload = function()
 			myColor = obj.color;
 			Start(myColor);
 			color = "white";
-			include("Events.js");
+			//include("Events.js");
 		});
 		
-		socket.on ("game_logs"), function (arr)
+		socket.on ("game_logs", function (arr)
 		{
+			Start("white");
 			for (var i = 0; i < arr.length; i++)
 			{
 				justMove(arr[i].moveData, arr[i].moveType);
 			}
-		}
+		});
 		
-		socket.on ("roomsList"), function (arr)
+		socket.on ("roomsList", function (arr)
 		{
 			for (var i = 0; i < arr.length; i++)
 			{
-				justMove(arr[i].moveData, arr[i].moveType);
+				$(".room").remove();
+				createRoom(arr[i].roomID, arr[i].length);
 			}
-		}
+		});
 		
 		socket.on("player_move", function(obj)
 		{
-			if (!(checkObj(obj) && checkStr(obj.playerColor) && checkColor(obj.playerColor) && checkCoord(obj.from) && checkCoord(obj.to)))
-			{
-				turnInvalid();
-				return;
-			}
-			if (tryMove(obj))
+			if (observermod)
 			{				
-				if (moveType != "move")
+				if (!(checkObj(obj) && checkStr(obj.playerColor) && checkColor(obj.playerColor) && checkCoord(obj.from) && checkCoord(obj.to)))
+				{
+					alert("Кривые данные на вход");
+					return;
+				}
+				else
+				{
+					justMove(obj, "move");
+				}
+			}
+			else
+			{
+				if (!(checkObj(obj) && checkStr(obj.playerColor) && checkColor(obj.playerColor) && checkCoord(obj.from) && checkCoord(obj.to)))
 				{
 					turnInvalid();
 					return;
 				}
-				EndOfStep();
-				checkMateOrPat(myColor);
+				if (tryMove(obj))
+				{				
+					if (moveType != "move")
+					{
+						turnInvalid();
+						return;
+					}
+					EndOfStep();
+					checkMateOrPat(myColor);
+				}
 			}
 		});
 		
 		socket.on("player_castling", function(obj)
-		{
-			
-			if (!(checkObj(obj) && checkStr(obj.playerColor) && checkColor(obj.playerColor) && checkCoord(obj.from)))
-			{
-				turnInvalid();
-				return;
+		{			
+			if (observermod)
+			{				
+				if (!(checkObj(obj) && checkStr(obj.playerColor) && checkColor(obj.playerColor) && checkCoord(obj.from)))
+				{
+					alert("Кривые данные на вход");
+					return;
+				}
+				else
+				{
+					justMove(obj, "castling");
+				}
 			}
-			if (tryCastlingWith(obj))
+			else
 			{
-				if (moveType != "castling")
+				if (!(checkObj(obj) && checkStr(obj.playerColor) && checkColor(obj.playerColor) && checkCoord(obj.from)))
 				{
 					turnInvalid();
 					return;
 				}
-				EndOfStep();
-				checkMateOrPat(myColor);
+				if (tryCastlingWith(obj))
+				{
+					if (moveType != "castling")
+					{
+						turnInvalid();
+						return;
+					}
+					EndOfStep();
+					checkMateOrPat(myColor);
+				}
 			}
 		});
 		
 		socket.on("player_promotion", function(obj)
-		{
-			
-			if (!(checkObj(obj) && checkStr(obj.playerColor) && checkColor(obj.playerColor) && checkCoord(obj.from) && checkCoord(obj.to) && checkStr(obj.newPiece) && checkFigure(obj.newPiece)))
-			{
-				turnInvalid();
-				return;
-			}
-			if (tryPromotion(obj))
+		{			
+			if (observermod)
 			{				
+				if (!(checkObj(obj) && checkStr(obj.playerColor) && checkColor(obj.playerColor) && checkCoord(obj.from) && checkCoord(obj.to) && checkStr(obj.newPiece) && checkFigure(obj.newPiece)))
+				{
+					alert("Кривые данные на вход");
+					return;
+				}
+				justMove(obj, "promotion");
+			}
+			else
+			{
+				if (!(checkObj(obj) && checkStr(obj.playerColor) && checkColor(obj.playerColor) && checkCoord(obj.from) && checkCoord(obj.to) && checkStr(obj.newPiece) && checkFigure(obj.newPiece)))
+				{
+					turnInvalid();
+					return;
+				}
+				if (tryPromotion(obj))
+				{				
 				if (moveType != "queening")
 				{
 					turnInvalid();
@@ -103,6 +146,7 @@ window.onload = function()
 				}
 				EndOfStep();
 				checkMateOrPat(myColor);
+			}
 			}
 		});		
 		
@@ -128,14 +172,10 @@ window.onload = function()
 			if (!obj.winnerColor)
 				obj.winnerColor = "no";
 			alert("Winner: " + obj.winnerColor);
-			//выход
+			menu();
 		});	
-		
-		
 	});	
 };
-
-
 
 function getMyId(obj)
 {
@@ -168,6 +208,7 @@ function tryCastlingWith(obj)
 	doCastling(toId);
 	return true;	
 }
+
 function tryMove(obj)
 {	
 	var id = getMyId(obj.from);
@@ -194,7 +235,8 @@ function justMove(obj, type)
 		case "move":
 			setFigure(getMyId(obj.from));	
 			SetModGetArr();
-			moveTo(getMyId(obj.to));
+			if (CanMoveTo (getMyId(obj.to), color))
+				moveTo(getMyId(obj.to));
 		break;
 		case "castling":		
 			var rookId = getMyId(obj.from);
@@ -216,7 +258,9 @@ function justMove(obj, type)
 			clientservermod = true;
 		break;
 	}
+	EndOfStep();
 }
+
 function tryPromotion (obj)
 {
 	if (!tryMove(obj))
@@ -294,7 +338,7 @@ function checkObj(obj)
 
 function checkStr(obj)
 {
-	return typeof(obj) === "string";
+	return true;//typeof(obj) === "string";
 }
 
 function checkColor(obj)
@@ -329,6 +373,48 @@ function checkMsg(obj)
 
 function checkCoord(obj)
 {
-	return checkObj(obj) && checkStr(obj.x) && checkLetter(obj.x) && checkInt(obj.y)
+	return checkObj(obj) && checkStr(obj.x) && checkLetter(obj.x) && checkInt(+obj.y)
 }
 
+function createRoom(roomID, length)
+{		
+	var color = "#F0C0D0";
+	var div = document.createElement('div');
+	div.setAttribute("baseColor", color);
+	div.setAttribute("prevColor", color);
+	div.setAttribute("roomID", roomID);
+	div.setAttribute("length", length);	
+	div.setAttribute("class", "room");
+	div.style.background = color;
+	div.style.width = 50;
+	div.style.height = 10;
+	div.style.display = "inline-block";		
+	div.innerHTML = roomID;
+	document.body.appendChild(div);	
+}
+
+function createMenuDiv(name, event)
+{	
+	var color = "#F6CED8";
+	var div = document.createElement('div');
+	div.setAttribute("baseColor", color);
+	div.setAttribute("prevColor", color);
+	div.setAttribute("name", name);
+	div.setAttribute("event", event);	
+	div.setAttribute("class", "menu");
+	div.style.background = color;
+	div.style.width = 100;
+	div.style.height = 20;
+	div.style.display = "inline-block";		
+	div.innerHTML = name;
+	document.body.appendChild(div);	
+}
+
+function menu()
+{
+	$("div").remove();
+	createMenuDiv("wait", "game_find");
+	createMenuDiv("unwait", "game_stopFinding");
+	createMenuDiv("subscribe", "roomsList_subscribe");
+	createMenuDiv("unsubscribe", "roomsList_unsubscribe");	
+}

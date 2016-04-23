@@ -1,5 +1,5 @@
 
-$('.square').on("click",
+$(document).on("click", '.square',
 function(){
 	if (queeningId)
 	{
@@ -35,8 +35,8 @@ function(){
 			Unpaint(arr);
 			isFigureTaken = false;
 			var id = $(this).attr("id");
-			//if (
-			CanMoveTo(id, color);//)
+			if (
+			CanMoveTo(id, color))
 			{
 				moveTo(id);				
 				
@@ -78,7 +78,7 @@ function(){
 	}
 });
 
-$(".pick[name]").on("click",
+$(document).on("click", ".pick[name]",
 function (){
 	if (!queeningId)
 		return;
@@ -92,10 +92,37 @@ function (){
 //финтифлюшки
 /////////////////////////////////////
 
-$('.square').hover(
-function(){
+$(document).on(
+{
+mouseenter: function(){
 	$(this).css({backgroundColor: '#B0C4DE'});
 },
-function(){
+mouseleave: function(){
 	$(this).css({backgroundColor: $(this).attr('prevColor')});
-});
+}},
+'.square, .menu');
+
+
+//menu
+
+$(document).on("click", ".menu",
+function (){
+	socket.emit($(this).attr("event"));
+	if ($(this).attr("name") === "leave")
+		menu();
+	
+	if ($(this).attr("name") === "subscribe")
+		observermod = true;
+	
+	if ($(this).attr("name") === "unsubscribe")
+		observermod = false;
+})
+
+
+//rooms
+
+$(document).on("click", ".room",
+function (){
+	socket.emit("room_enter", {roomID:$(this).attr("roomID")});
+	
+})

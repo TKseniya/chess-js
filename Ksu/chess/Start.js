@@ -1,5 +1,6 @@
 function Start(myColor)
-{
+{	
+	$("div").remove();
 	DrawChessboard(myColor);
 
 	SetStartPosition(whiteColor);
@@ -11,6 +12,20 @@ function Start(myColor)
 	CreatePickChessmen("bishop");
 
 	CreateLayer();
+	
+	var color = "#F6CED8";
+	var div = document.createElement('div');
+	div.setAttribute("baseColor", color);
+	div.setAttribute("prevColor", color);
+	div.setAttribute("name", "leave");
+	div.setAttribute("event", "room_leave");	
+	div.setAttribute("class", "menu");
+	div.style.background = color;
+	div.style.width = 100;
+	div.style.height = 20;
+	div.style.display = "inline-block";		
+	div.innerHTML = "leave";
+	document.body.appendChild(div);	
 
 	blackColor = "black";
 	whiteColor = "white";

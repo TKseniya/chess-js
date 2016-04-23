@@ -1,5 +1,6 @@
 //Global
 
+var observermod = false;
 //цвета
 var blackColor;
 var whiteColor;
